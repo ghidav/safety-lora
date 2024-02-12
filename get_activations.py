@@ -7,7 +7,6 @@ from utils import convert_to_chat, get_activations, convert_to_alpaca, load_mode
 
 parser = argparse.ArgumentParser(description="PCA experiment.")
 
-parser.add_argument('-tl', '--tl_model', type=str, help='TL model to load')
 parser.add_argument('-hf', '--hf_model', type=str, help='HF model to load')
 parser.add_argument('-c', '--component', type=str, help="Component from which activations should be taken")
 parser.add_argument('-ds', '--dataset', type=str, help="Dataset to load")
@@ -28,12 +27,8 @@ if not os.path.exists(activ_path):
 df = pd.read_csv(f"data/{args.dataset}.csv", index_col=0)
 
 # Model loading
-model = load_model(args.hf_model, args.tl_model, args.adapter, device='cuda', n_devices=4, dtype=th.bfloat16)
+model = load_model(args.hf_model, args.adapter, device='cuda', n_devices=4, dtype=th.bfloat16)
 model.eval()
-
-if 'llama' in args.tl_model.lower():
-    model.tokenizer.pad_token = model.tokenizer.eos_token
-    model.tokenizer.pad_token_id = model.tokenizer.eos_token_id
 
 if args.chat == 'none':
     pass

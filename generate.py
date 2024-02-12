@@ -14,8 +14,6 @@ parser = argparse.ArgumentParser(description='Activation probing of LLMs.')
 parser.add_argument("-hf", "--hf_model", help="Huggingface model to load.", type=str)
 parser.add_argument("-d", "--device", help="Device to load the model.", type=str, default='cuda')
 parser.add_argument("-bs", "--batch_size", help="Batch size of the prompts.", type=int, default=32)
-parser.add_argument("-tl", "--tl_model", help="Model as called in transformerlens, needs to be specified if different from hf_model.", type=str,
-                    default="")
 parser.add_argument("-ds", "--dataset", help="Dataset to run the probing (must be in the /data folder!).", type=str,
                     default="")
 parser.add_argument("-adp", "--adapter", help="Huggingface adapter model.", type=str, default="")
@@ -25,7 +23,7 @@ args = parser.parse_args()
 
 # Set output path
 model_folder = args.hf_model if args.adapter == "" else args.adapter
-generations_path = os.path.join('data', model_folder)
+generations_path = os.path.join('generations', model_folder)
 if not os.path.exists(generations_path):
     os.makedirs(generations_path)
 
@@ -34,7 +32,7 @@ if ':' in args.device:
 else:
     n_devices = 4
 
-model = load_model(args.hf_model, args.tl_model, args.adapter,
+model = load_model(args.hf_model, args.adapter,
                    device=args.device, n_devices=n_devices, dtype=torch.bfloat16)
 
 # Loading the dataset
