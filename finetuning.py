@@ -276,7 +276,7 @@ def train(
         output_dir=model_dir,
         save_total_limit=30 if train_using_lora else 1,
         load_best_model_at_end=True,
-        #ddp_find_unused_parameters=False if ddp else None,
+        ddp_find_unused_parameters=False if ddp else None,
         group_by_length=group_by_length,
         report_to=None,
         run_name=None,

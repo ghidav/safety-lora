@@ -6,7 +6,9 @@ from transformer_lens import HookedTransformer
 from peft import PeftModel
 import torch as th
 from tqdm.auto import tqdm
-
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
 
 def get_activations(model, prompts, component, bs=32):
     nl = len(model.blocks)
@@ -135,3 +137,36 @@ def load_model(model_name, adapter_model="", device='cpu', n_devices=1, dtype=th
     model.tokenizer.padding_side = 'left' 
 
     return model
+
+
+# Plotting
+def plot_layer_distributions(activations, y, palette, ax=None, size=0.3, plot_xstest=True):
+    df = pd.DataFrame({
+        'x': activations[:, 0],
+        'y': activations[:, 1],
+        'label': y
+    })
+
+    if not plot_xstest:
+        df = df[df['label'] != 'XSTest']
+
+    if ax is None:
+        fig, ax = plt.subplots(figsize=(7, 5), dpi=120)
+        
+    sns.kdeplot(
+        data=df, x='x', y='y', hue='label', alpha=0.4, common_norm=False, ax=ax, palette=palette
+    )
+
+    sns.scatterplot(
+        data=df, x='x', y='y', hue='label', ax=ax, alpha=0.2, palette=palette, size=size
+    )
+    
+    # Get the handles and labels of the current legend
+    handles, labels = ax.get_legend_handles_labels()
+
+    # Remove the size handle and label
+    handles = [h for i,h in enumerate(handles) if str(size) not in labels[i]]
+    labels = [l for i,l in enumerate(labels) if str(size) not in labels[i]]
+
+    # Set the legend again
+    ax.legend(handles, labels, loc='lower right')
