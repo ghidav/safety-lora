@@ -19,16 +19,18 @@ class Prompter(object):
     def __init__(self):
         self.template = {
             "prompt": "A chat between a user and an AI assistant. The assistant answers the user's questions.\n\n"
-            "### User: {instruction}\n### Assistant: ",
+            "### User: {instruction}\n### Input: {input}\n### Assistant: ",
+            
             "response_split": "### Assistant:",
         }
 
     def generate_prompt(
         self,
         instruction: str,
+        input: str,
         output: str = None,
     ) -> str:
-        res = self.template["prompt"].format(instruction=instruction)
+        res = self.template["prompt"].format(instruction=instruction, input=input)
         if output:
             res = f"{res}{output}"
 
@@ -181,6 +183,7 @@ def train(
     def generate_and_tokenize_prompt(data_point):
         full_prompt = prompter.generate_prompt(
             data_point["instruction"],
+            data_point["input"],
             data_point["output"],
         )
         tokenized_full_prompt = tokenize(full_prompt)
