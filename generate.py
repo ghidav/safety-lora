@@ -4,9 +4,11 @@ import torch
 import os
 from simple_generation import SimpleGenerator
 from tqdm import tqdm
-from utils import load_model, convert_to_alpaca, convert_to_chat, convert_to_sbi
+from utils import load_model
+from finetuning import Prompter
 
 os.environ['TOKENIZERS_PARALLELISM'] = "true"
+prompter = Prompter()
 
 #  Args and logging
 parser = argparse.ArgumentParser(description='Activation probing of LLMs.')
@@ -17,7 +19,6 @@ parser.add_argument("-bs", "--batch_size", help="Batch size of the prompts.", ty
 parser.add_argument("-ds", "--dataset", help="Dataset to run the probing (must be in the /data folder!).", type=str,
                     default="")
 parser.add_argument("-adp", "--adapter", help="Huggingface adapter model.", type=str, default="")
-parser.add_argument("-chat", "--chat", help="Chat prompt template to use ('none', 'base', 'chat', 'alpaca').", type=str, default="")
 
 args = parser.parse_args()
 
@@ -37,22 +38,13 @@ model = load_model(args.hf_model, args.adapter,
 
 # Loading the dataset
 df = pd.read_csv(f'data/{args.dataset}.csv', index_col=0)
+try:
+    df['input'] = df['input'].fillna('')
+except: pass
 
-if args.chat == 'none':
-    pass
-elif args.chat == 'base':
-    prompts = convert_to_chat(model, df['prompt'].values, sys_prompt=False)
-elif args.chat == 'safe':
-    prompts = convert_to_chat(model, df['prompt'].values, sys_prompt=True)
-elif args.chat == 'alpaca':
-    try:
-        prompts = df.apply(lambda row: convert_to_alpaca(row['instruction'], row['input']), axis=1).values
-    except:
-        prompts = df.apply(lambda row: convert_to_alpaca(row['instruction']), axis=1).values
-elif args.chat == 'safety-by-imitation':
-    prompts = df.apply(lambda row: convert_to_sbi(row['instruction']), axis=1).values
-else:
-    raise NotImplementedError
+prompts = df.apply(lambda row: prompter.generate_prompt(
+    instruction=row['instruction'],
+    input=row['input']), axis=1).values
 
 n = len(prompts)
 if n % args.batch_size != 0:

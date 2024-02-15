@@ -57,11 +57,12 @@ def convert_to_alpaca(prompt, input=""):
         alpaca_prompt = f"Below is an instruction that describes a task. Write a response that appropriately completes the request.\n\n### Instruction:\n{prompt}\n\n### Input:\n{input}\n\n### Response:\n"
     return alpaca_prompt
 
-def convert_to_sbi(prompt, input=""):
-    if input == "":
-        sbi_prompt = f"A chat between a user and an AI assistant. The assistant answers the user's questions.\n\n### User: {prompt}\n### Assistant: "
-    else:
-        sbi_prompt = f"A chat between a user and an AI assistant. The assistant answers the user's questions.\n\n### User: {prompt}\n### Input:{input}\n### Assistant: "
+def convert_to_sbi(prompt, input_=""):
+    sbi_prompt = f"A chat between a user and an AI assistant. The assistant answers the user's questions.\n\n### User: {prompt}\n### Input: {input_}\n### Assistant: "
+    #if input == "":
+    #    sbi_prompt = f"A chat between a user and an AI assistant. The assistant answers the user's questions.\n\n### User: {prompt}\n### Assistant: "
+    #else:
+    #    sbi_prompt = f"A chat between a user and an AI assistant. The assistant answers the user's questions.\n\n### User: {prompt}\n### Input:{input}\n### Assistant: "
     return sbi_prompt
 
 class FastPCA(BaseEstimator, TransformerMixin):

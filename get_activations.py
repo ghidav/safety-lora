@@ -25,6 +25,9 @@ if not os.path.exists(activ_path):
 
 # Data loading
 df = pd.read_csv(f"data/{args.dataset}.csv", index_col=0)
+try:
+    df['input'] = df['input'].fillna('')
+except: pass
 
 # Model loading
 model = load_model(args.hf_model, args.adapter, device='cuda', n_devices=4, dtype=th.bfloat16)
@@ -42,7 +45,7 @@ elif args.chat == 'alpaca':
     except:
         prompts = df.apply(lambda row: convert_to_alpaca(row['instruction']), axis=1).values
 elif args.chat == 'safety-by-imitation':
-    prompts = df.apply(lambda row: convert_to_sbi(row['instruction']), axis=1).values
+    prompts = df.apply(lambda row: convert_to_sbi(row['instruction'], row['input']), axis=1).values
 else:
     raise NotImplementedError
 
