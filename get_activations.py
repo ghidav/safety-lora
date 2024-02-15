@@ -2,6 +2,7 @@ import torch as th
 import pandas as pd
 import argparse
 import os
+from finetuning import Prompter
 
 from utils import convert_to_chat, get_activations, convert_to_alpaca, load_model, convert_to_sbi
 
@@ -12,10 +13,11 @@ parser.add_argument('-c', '--component', type=str, help="Component from which ac
 parser.add_argument('-ds', '--dataset', type=str, help="Dataset to load")
 
 parser.add_argument('-adp', '--adapter', type=str, help='Adapter to load', default="")
-parser.add_argument('-chat', '--chat', type=str, help="To add the chat prompt (one of 'none', 'base', 'safe')", default='none')
 parser.add_argument('-bs', '--batch_size', type=int, help='Batch size', default=32)
 
 args = parser.parse_args()
+
+prompter = Prompter()
 
 # Creating dirs
 model_folder = args.hf_model if args.adapter == "" else args.adapter
@@ -33,23 +35,11 @@ except: pass
 model = load_model(args.hf_model, args.adapter, device='cuda', n_devices=4, dtype=th.bfloat16)
 model.eval()
 
-if args.chat == 'none':
-    pass
-elif args.chat == 'base':
-    prompts = convert_to_chat(model, df['prompt'].values, sys_prompt=False)
-elif args.chat == 'safe':
-    prompts = convert_to_chat(model, df['prompt'].values, sys_prompt=True)
-elif args.chat == 'alpaca':
-    try:
-        prompts = df.apply(lambda row: convert_to_alpaca(row['instruction'], row['input']), axis=1).values # Da sistemare
-    except:
-        prompts = df.apply(lambda row: convert_to_alpaca(row['instruction']), axis=1).values
-elif args.chat == 'safety-by-imitation':
-    prompts = df.apply(lambda row: convert_to_sbi(row['instruction'], row['input']), axis=1).values
-else:
-    raise NotImplementedError
+prompts = df.apply(lambda row: prompter.generate_prompt(
+    instruction=row['instruction'],
+    input=row['input'])[:-1], axis=1).values
 
 print("Caching activations...")
 activations = get_activations(model, prompts, args.component, bs=args.batch_size).cpu()
-th.save(activations, os.path.join(activ_path, f"{args.dataset}_{args.chat}_{args.component}.pt"))
+th.save(activations, os.path.join(activ_path, f"{args.dataset}_{args.component}.pt"))
 print("Activations cached.")
