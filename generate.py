@@ -44,7 +44,7 @@ except: pass
 
 prompts = df.apply(lambda row: prompter.generate_prompt(
     instruction=row['instruction'],
-    input=row['input']), axis=1).values
+    input=row['input'])[:-1], axis=1).values
 
 n = len(prompts)
 if n % args.batch_size != 0:
