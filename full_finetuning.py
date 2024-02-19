@@ -221,7 +221,7 @@ def train(
     model = AutoModelForCausalLM.from_pretrained(
         base_model,
         load_in_8bit=True if train_using_lora else False,
-        torch_dtype=torch.float16 if train_using_lora else torch.bfloat16,
+        torch_dtype=torch.float16 if train_using_lora else torch.float16,
         device_map=device_map,
         trust_remote_code=True,
     )
