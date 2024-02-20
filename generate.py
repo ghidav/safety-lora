@@ -58,7 +58,10 @@ bs = args.batch_size
 ans = []
 
 for b in tqdm(range(n // bs)):
-    tokens = model.to_tokens(prompts[b*bs:(b+1)*bs]) # [bs pos]
+    batch_prompts = prompts[b*bs:(b+1)*bs]
+    # Ensure all prompts are strings
+    batch_prompts = [str(prompt) for prompt in batch_prompts]
+    tokens = model.to_tokens(batch_prompts) # [bs pos]
     out = model.generate(tokens, max_new_tokens=max_new_toks, verbose=False, temperature=0)
     ans += model.tokenizer.batch_decode(out, skip_special_tokens=True)
 

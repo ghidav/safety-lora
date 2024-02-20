@@ -13,9 +13,13 @@ import seaborn as sns
 def get_activations(model, prompts, component, bs=32):
     nl = len(model.blocks)
     activations = []
+    offset = min(1, len(prompts) % bs)
 
-    for b in tqdm(range(len(prompts) // bs + 1)):
-        tokens = model.to_tokens(list(prompts[b*bs:(b+1)*bs]))
+    for b in tqdm(range(len(prompts) // bs + offset)):
+        batch_prompts = prompts[b*bs:(b+1)*bs]
+        # Ensure all prompts are strings
+        batch_prompts = [str(prompt) for prompt in batch_prompts]
+        tokens = model.to_tokens(batch_prompts) # [bs pos]
 
         with th.no_grad():
             _, cache = model.run_with_cache(tokens)
