@@ -19,6 +19,7 @@ parser.add_argument("-bs", "--batch_size", help="Batch size of the prompts.", ty
 parser.add_argument("-ds", "--dataset", help="Dataset to run the probing (must be in the /data folder!).", type=str,
                     default="")
 parser.add_argument("-adp", "--adapter", help="Huggingface adapter model.", type=str, default="")
+parser.add_argument("-nt", "--new_tokens", help="Huggingface adapter model.", type=int, default=32)
 
 args = parser.parse_args()
 
@@ -52,7 +53,7 @@ if n % args.batch_size != 0:
     n = len(prompts)
 
 # Generate
-max_new_toks = 32
+max_new_toks = args.new_tokens
 bs = args.batch_size
 
 ans = []
