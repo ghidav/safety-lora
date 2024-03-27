@@ -2,7 +2,6 @@ import argparse
 import pandas as pd
 import torch
 import os
-from simple_generation import SimpleGenerator
 from tqdm import tqdm
 from utils import load_model
 from finetuning import Prompter
@@ -32,7 +31,7 @@ if not os.path.exists(generations_path):
 if ':' in args.device:
     n_devices = 1
 else:
-    n_devices = 4
+    n_devices = torch.cuda.device_count()
 
 model = load_model(args.hf_model, args.adapter,
                    device=args.device, n_devices=n_devices, dtype=torch.bfloat16)

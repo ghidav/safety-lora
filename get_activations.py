@@ -14,10 +14,13 @@ parser.add_argument('-ds', '--dataset', type=str, help="Dataset to load")
 
 parser.add_argument('-adp', '--adapter', type=str, help='Adapter to load', default="")
 parser.add_argument('-bs', '--batch_size', type=int, help='Batch size', default=32)
+parser.add_argument('-nd', '--n_devices', type=int, help='N devices', default=0)
 
 args = parser.parse_args()
 
 prompter = Prompter()
+
+if args.n_devices == 0: args.n_devices = th.cuda.device_count()
 
 # Creating dirs
 model_folder = args.hf_model if args.adapter == "" else args.adapter
@@ -32,7 +35,7 @@ try:
 except: pass
 
 # Model loading
-model = load_model(args.hf_model, args.adapter, device='cuda', n_devices=4, dtype=th.bfloat16)
+model = load_model(args.hf_model, args.adapter, device='cuda', n_devices=args.n_devices, dtype=th.bfloat16)
 model.eval()
 
 prompts = df.apply(lambda row: prompter.generate_prompt(
